@@ -23,7 +23,7 @@ const processPDF = async (pdfPath) => {
     }
     Ensure all fields are included, even if they are empty. Text: ${pdfData.text}`;
 
-    // Summarize and extract project structure using Gemini API
+    // Summarize and extract project structure using Gemini API with timeout
     const response = await axios.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
       contents: [
         {
@@ -39,6 +39,7 @@ const processPDF = async (pdfPath) => {
         'Content-Type': 'application/json',
         'X-goog-api-key': process.env.GEMINI_API_KEY,
       },
+      timeout: 30000, // 30 seconds timeout
     });
 
     console.log('Gemini API Response:', response.data);
@@ -66,8 +67,35 @@ const processPDF = async (pdfPath) => {
   }
 };
 
+
 const saveProject = async (projectData) => {
   try {
+    // Ensure mainTasks and subtasks have all required fields
+    if (Array.isArray(projectData.mainTasks)) {
+      projectData.mainTasks = projectData.mainTasks.map((task) => ({
+        name: task.name,
+        description: task.description || '',
+        status: task.status || 'not-started',
+        priority: task.priority || 'medium',
+        subtasks: Array.isArray(task.subtasks)
+          ? task.subtasks.map((sub) =>
+              typeof sub === 'string'
+                ? {
+                    name: sub,
+                    description: '',
+                    status: 'not-started',
+                    priority: 'medium',
+                  }
+                : {
+                    name: sub.name,
+                    description: sub.description || '',
+                    status: sub.status || 'not-started',
+                    priority: sub.priority || 'medium',
+                  }
+            )
+          : [],
+      }));
+    }
     const project = new Project(projectData);
     await project.save();
     return project;

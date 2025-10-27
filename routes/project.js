@@ -1,13 +1,208 @@
 const express = require('express');
-const router = express.Router();
+ const router = express.Router();
 const Project = require('../entities/Project');
 const { processPDF, saveProject } = require('../services/projectService');
 const multer = require('multer');
 const fs = require('fs');
-
 const upload = multer({ dest: 'uploads/' });
 
+// Add a comment to a main task
+router.post('/:projectId/mainTasks/:mainTaskIndex/comments', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex } = req.params;
+    const { author, content } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const idx = parseInt(mainTaskIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= project.mainTasks.length) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex' });
+    }
+    const newComment = { author, content };
+    project.mainTasks[idx].comments.push(newComment);
+    await project.save();
+    res.status(201).json(project.mainTasks[idx].comments);
+  } catch (error) {
+    console.error('Error adding comment to main task:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
+// Add a comment to a subtask
+router.post('/:projectId/mainTasks/:mainTaskIndex/subtasks/:subtaskIndex/comments', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex, subtaskIndex } = req.params;
+    const { author, content } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const mIdx = parseInt(mainTaskIndex, 10);
+    const sIdx = parseInt(subtaskIndex, 10);
+    if (
+      isNaN(mIdx) || mIdx < 0 || mIdx >= project.mainTasks.length ||
+      isNaN(sIdx) || sIdx < 0 || sIdx >= project.mainTasks[mIdx].subtasks.length
+    ) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex or subtaskIndex' });
+    }
+    const newComment = { author, content };
+    project.mainTasks[mIdx].subtasks[sIdx].comments.push(newComment);
+    await project.save();
+    res.status(201).json(project.mainTasks[mIdx].subtasks[sIdx].comments);
+  } catch (error) {
+    console.error('Error adding comment to subtask:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
+// Get comments for a main task
+router.get('/:projectId/mainTasks/:mainTaskIndex/comments', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const idx = parseInt(mainTaskIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= project.mainTasks.length) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex' });
+    }
+    res.status(200).json(project.mainTasks[idx].comments);
+  } catch (error) {
+    console.error('Error getting comments for main task:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
+// Get comments for a subtask
+router.get('/:projectId/mainTasks/:mainTaskIndex/subtasks/:subtaskIndex/comments', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex, subtaskIndex } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const mIdx = parseInt(mainTaskIndex, 10);
+    const sIdx = parseInt(subtaskIndex, 10);
+    if (
+      isNaN(mIdx) || mIdx < 0 || mIdx >= project.mainTasks.length ||
+      isNaN(sIdx) || sIdx < 0 || sIdx >= project.mainTasks[mIdx].subtasks.length
+    ) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex or subtaskIndex' });
+    }
+    res.status(200).json(project.mainTasks[mIdx].subtasks[sIdx].comments);
+  } catch (error) {
+    console.error('Error getting comments for subtask:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+// Add a subtask to a main task
+router.post('/:projectId/mainTasks/:mainTaskIndex/subtasks', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex } = req.params;
+    const { name, description, status, priority } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const idx = parseInt(mainTaskIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= project.mainTasks.length) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex' });
+    }
+    const newSubtask = {
+      name,
+      description: description || '',
+      status: status || 'not-started',
+      priority: priority || 'medium',
+    };
+    project.mainTasks[idx].subtasks.push(newSubtask);
+    await project.save();
+    res.status(201).json(project.mainTasks[idx].subtasks);
+  } catch (error) {
+    console.error('Error adding subtask:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
+// Remove a subtask from a main task
+router.delete('/:projectId/mainTasks/:mainTaskIndex/subtasks/:subtaskIndex', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex, subtaskIndex } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const mIdx = parseInt(mainTaskIndex, 10);
+    const sIdx = parseInt(subtaskIndex, 10);
+    if (
+      isNaN(mIdx) || mIdx < 0 || mIdx >= project.mainTasks.length ||
+      isNaN(sIdx) || sIdx < 0 || sIdx >= project.mainTasks[mIdx].subtasks.length
+    ) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex or subtaskIndex' });
+    }
+    project.mainTasks[mIdx].subtasks.splice(sIdx, 1);
+    await project.save();
+    res.status(200).json(project.mainTasks[mIdx].subtasks);
+  } catch (error) {
+    console.error('Error removing subtask:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
 // Create project from PDF
+router.put('/:projectId/mainTasks/:mainTaskIndex', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex } = req.params;
+    const { name, description, status, priority } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const idx = parseInt(mainTaskIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= project.mainTasks.length) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex' });
+    }
+    if (name !== undefined) project.mainTasks[idx].name = name;
+    if (description !== undefined) project.mainTasks[idx].description = description;
+    if (status !== undefined) project.mainTasks[idx].status = status;
+    if (priority !== undefined) project.mainTasks[idx].priority = priority;
+    await project.save();
+    res.status(200).json(project.mainTasks[idx]);
+  } catch (error) {
+    console.error('Error updating main task:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
+// Update a subtask by index
+router.put('/:projectId/mainTasks/:mainTaskIndex/subtasks/:subtaskIndex', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex, subtaskIndex } = req.params;
+    const { name, description, status, priority } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const mIdx = parseInt(mainTaskIndex, 10);
+    const sIdx = parseInt(subtaskIndex, 10);
+    if (
+      isNaN(mIdx) || mIdx < 0 || mIdx >= project.mainTasks.length ||
+      isNaN(sIdx) || sIdx < 0 || sIdx >= project.mainTasks[mIdx].subtasks.length
+    ) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex or subtaskIndex' });
+    }
+    if (name !== undefined) project.mainTasks[mIdx].subtasks[sIdx].name = name;
+    if (description !== undefined) project.mainTasks[mIdx].subtasks[sIdx].description = description;
+    if (status !== undefined) project.mainTasks[mIdx].subtasks[sIdx].status = status;
+    if (priority !== undefined) project.mainTasks[mIdx].subtasks[sIdx].priority = priority;
+    await project.save();
+    res.status(200).json(project.mainTasks[mIdx].subtasks[sIdx]);
+  } catch (error) {
+    console.error('Error updating subtask:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
 router.post('/upload', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
