@@ -203,6 +203,28 @@ router.put('/:projectId/mainTasks/:mainTaskIndex/subtasks/:subtaskIndex', async 
     res.status(500).json({ message: 'Internal server error', error });
   }
 });
+
+// Delete a main task by index
+router.delete('/:projectId/mainTasks/:mainTaskIndex', async (req, res) => {
+  try {
+    const { projectId, mainTaskIndex } = req.params;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const idx = parseInt(mainTaskIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= project.mainTasks.length) {
+      return res.status(400).json({ message: 'Invalid mainTaskIndex' });
+    }
+    project.mainTasks.splice(idx, 1);
+    await project.save();
+    res.status(200).json({ message: 'Main task deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting main task:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
 router.post('/upload', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
@@ -214,7 +236,21 @@ router.post('/upload', upload.single('pdf'), async (req, res) => {
     res.status(200).json({ message: 'Project saved successfully', project });
   } catch (error) {
     console.error('Error processing upload:', error);
-    res.status(500).json({ message: 'Internal server error', error });
+    
+    // Handle specific PDF parsing errors
+    if (error.message.includes('Invalid PDF structure') || 
+        error.message.includes('Unknown compression method') ||
+        error.message.includes('not a valid PDF') ||
+        error.message.includes('unsupported format')) {
+      return res.status(400).json({ message: error.message });
+    }
+    
+    // Handle Gemini API errors
+    if (error.message.includes('Gemini API')) {
+      return res.status(500).json({ message: 'Error processing with AI service. Please try again.' });
+    }
+    
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 });
 

@@ -10,6 +10,11 @@ const processPDF = async (pdfPath) => {
     const dataBuffer = fs.readFileSync(path.resolve(pdfPath));
     const pdfData = await pdfParse(dataBuffer);
 
+    // Check if we got any text
+    if (!pdfData.text || pdfData.text.trim().length === 0) {
+      throw new Error('The PDF appears to be image-based or contains no extractable text. Please upload a text-based PDF.');
+    }
+
     // Define the hidden prompt
     const prompt = `You are an AI assistant. Given the following text, extract a project structure in the exact JSON format below:
     {
@@ -63,6 +68,18 @@ const processPDF = async (pdfPath) => {
     return projectStructure; // Extracted project structure
   } catch (error) {
     console.error('Error processing PDF:', error);
+    
+    // Handle specific PDF parsing errors
+    if (error.message.includes('Invalid PDF structure') || error.message.includes('Unknown compression method')) {
+      throw new Error('The uploaded file is not a valid PDF or uses an unsupported format. Please try a different PDF file.');
+    }
+    
+    // Handle empty text
+    if (error.message.includes('image-based') || error.message.includes('no extractable text')) {
+      throw error;
+    }
+    
+    // Re-throw other errors
     throw error;
   }
 };
