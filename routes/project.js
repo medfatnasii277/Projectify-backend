@@ -225,6 +225,32 @@ router.delete('/:projectId/mainTasks/:mainTaskIndex', async (req, res) => {
   }
 });
 
+// Add a new main task to a project
+router.post('/:projectId/mainTasks', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { name, description, status, priority } = req.body;
+    const project = await Project.findById(projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    const newTask = {
+      name: name || 'New Task',
+      description: description || '',
+      status: status || 'not-started',
+      priority: priority || 'medium',
+      subtasks: [],
+      comments: []
+    };
+    project.mainTasks.push(newTask);
+    await project.save();
+    res.status(201).json(project.mainTasks[project.mainTasks.length - 1]);
+  } catch (error) {
+    console.error('Error adding main task:', error);
+    res.status(500).json({ message: 'Internal server error', error });
+  }
+});
+
 router.post('/upload', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
