@@ -10,7 +10,8 @@ const CommentSchema = new mongoose.Schema({
 const ProjectSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, default: '' },
-  status: { type: String, enum: ['pending', 'in-progress', 'finished'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'in-progress' },
+  dueDate: { type: Date },
   mainTasks: [
     {
       name: { type: String, required: true },

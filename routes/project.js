@@ -316,13 +316,18 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Update project (description, status)
+// Update project (description, status, dueDate)
 router.put('/:id', async (req, res) => {
   try {
-    const { description, status } = req.body;
+    const { description, status, dueDate } = req.body;
+    const updateData = {};
+    if (description !== undefined) updateData.description = description;
+    if (status !== undefined) updateData.status = status;
+    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
+    
     const project = await Project.findByIdAndUpdate(
       req.params.id,
-      { $set: { description, status } },
+      { $set: updateData },
       { new: true }
     );
     if (!project) {
