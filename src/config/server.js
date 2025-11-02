@@ -1,11 +1,11 @@
 module.exports = {
   port: process.env.PORT || 3000,
   env: process.env.NODE_ENV || 'development',
-  apiPrefix: '/api',
+  apiPrefix: process.env.API_PREFIX || '/api/v1',
   
   // CORS configuration
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || ['http://localhost:5173', 'http://localhost:8080', 'http://localhost:3000'],
     credentials: true,
   },
   

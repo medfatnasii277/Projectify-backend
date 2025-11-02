@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const projectController = require('../controllers/project.controller');
+const { protect } = require('../middlewares/auth');
 const validate = require('../middlewares/validate');
 const {
   createProjectValidator,
@@ -18,6 +19,9 @@ const {
 const serverConfig = require('../config/server');
 
 const router = express.Router();
+
+// Protect all project routes
+router.use(protect);
 
 // Configure multer for file uploads
 const upload = multer({ 

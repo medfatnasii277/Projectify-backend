@@ -40,6 +40,15 @@ const ERROR_MESSAGES = {
   INTERNAL_SERVER_ERROR: 'Internal server error occurred',
   VALIDATION_ERROR: 'Validation error',
   
+  // Auth
+  UNAUTHORIZED: 'Not authorized to access this resource',
+  INVALID_CREDENTIALS: 'Invalid email or password',
+  EMAIL_ALREADY_EXISTS: 'Email already in use',
+  USER_NOT_FOUND: 'User not found',
+  INVALID_TOKEN: 'Invalid or expired token',
+  EMAIL_NOT_VERIFIED: 'Please verify your email to continue',
+  ACCOUNT_DEACTIVATED: 'Your account has been deactivated',
+  
   // Project
   PROJECT_NOT_FOUND: 'Project not found',
   PROJECT_CREATION_FAILED: 'Failed to create project',
@@ -71,6 +80,15 @@ const ERROR_MESSAGES = {
 
 // Success Messages
 const SUCCESS_MESSAGES = {
+  // Auth
+  REGISTRATION_SUCCESS: 'Registration successful',
+  LOGIN_SUCCESS: 'Login successful',
+  LOGOUT_SUCCESS: 'Logout successful',
+  EMAIL_VERIFIED: 'Email verified successfully',
+  PASSWORD_RESET_SUCCESS: 'Password reset successfully',
+  PASSWORD_CHANGED: 'Password changed successfully',
+  
+  // Project
   PROJECT_CREATED: 'Project created successfully',
   PROJECT_UPDATED: 'Project updated successfully',
   PROJECT_DELETED: 'Project deleted successfully',

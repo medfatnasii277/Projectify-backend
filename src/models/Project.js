@@ -89,6 +89,12 @@ const ProjectSchema = new mongoose.Schema({
     type: Date,
     index: true,
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'Project creator is required'],
+    index: true,
+  },
   mainTasks: [MainTaskSchema],
 }, { 
   timestamps: true,

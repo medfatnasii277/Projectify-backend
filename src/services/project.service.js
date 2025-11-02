@@ -7,11 +7,11 @@ class ProjectService {
   /**
    * Get all projects with pagination and filtering
    */
-  async getAllProjects(filters = {}, options = {}) {
+  async getAllProjects(userId, filters = {}, options = {}) {
     try {
       const { page = 1, limit = 10, status, sortBy = 'createdAt', sortOrder = 'desc' } = options;
       
-      const query = {};
+      const query = { createdBy: userId };
       if (status) {
         query.status = status;
       }
@@ -46,9 +46,9 @@ class ProjectService {
   /**
    * Get project by ID
    */
-  async getProjectById(projectId) {
+  async getProjectById(projectId, userId) {
     try {
-      const project = await Project.findById(projectId).lean();
+      const project = await Project.findOne({ _id: projectId, createdBy: userId }).lean();
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -65,9 +65,12 @@ class ProjectService {
   /**
    * Create a new project
    */
-  async createProject(projectData) {
+  async createProject(projectData, userId) {
     try {
-      const project = new Project(projectData);
+      const project = new Project({
+        ...projectData,
+        createdBy: userId,
+      });
       await project.save();
       
       logger.info(`Project created: ${project._id}`);
@@ -81,9 +84,9 @@ class ProjectService {
   /**
    * Update project
    */
-  async updateProject(projectId, updateData) {
+  async updateProject(projectId, updateData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -110,9 +113,9 @@ class ProjectService {
   /**
    * Delete project
    */
-  async deleteProject(projectId) {
+  async deleteProject(projectId, userId) {
     try {
-      const project = await Project.findByIdAndDelete(projectId);
+      const project = await Project.findOneAndDelete({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -130,9 +133,9 @@ class ProjectService {
   /**
    * Add main task to project
    */
-  async addMainTask(projectId, taskData) {
+  async addMainTask(projectId, taskData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -153,9 +156,9 @@ class ProjectService {
   /**
    * Update main task
    */
-  async updateMainTask(projectId, mainTaskIndex, updateData) {
+  async updateMainTask(projectId, mainTaskIndex, updateData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -185,9 +188,9 @@ class ProjectService {
   /**
    * Delete main task
    */
-  async deleteMainTask(projectId, mainTaskIndex) {
+  async deleteMainTask(projectId, mainTaskIndex, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -212,9 +215,9 @@ class ProjectService {
   /**
    * Add subtask to main task
    */
-  async addSubtask(projectId, mainTaskIndex, subtaskData) {
+  async addSubtask(projectId, mainTaskIndex, subtaskData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -239,9 +242,9 @@ class ProjectService {
   /**
    * Update subtask
    */
-  async updateSubtask(projectId, mainTaskIndex, subtaskIndex, updateData) {
+  async updateSubtask(projectId, mainTaskIndex, subtaskIndex, updateData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -276,9 +279,9 @@ class ProjectService {
   /**
    * Delete subtask
    */
-  async deleteSubtask(projectId, mainTaskIndex, subtaskIndex) {
+  async deleteSubtask(projectId, mainTaskIndex, subtaskIndex, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -308,9 +311,9 @@ class ProjectService {
   /**
    * Add comment to main task
    */
-  async addCommentToTask(projectId, mainTaskIndex, commentData) {
+  async addCommentToTask(projectId, mainTaskIndex, commentData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -335,9 +338,9 @@ class ProjectService {
   /**
    * Add comment to subtask
    */
-  async addCommentToSubtask(projectId, mainTaskIndex, subtaskIndex, commentData) {
+  async addCommentToSubtask(projectId, mainTaskIndex, subtaskIndex, commentData, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -367,9 +370,9 @@ class ProjectService {
   /**
    * Get comments for main task
    */
-  async getTaskComments(projectId, mainTaskIndex) {
+  async getTaskComments(projectId, mainTaskIndex, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);
@@ -390,9 +393,9 @@ class ProjectService {
   /**
    * Get comments for subtask
    */
-  async getSubtaskComments(projectId, mainTaskIndex, subtaskIndex) {
+  async getSubtaskComments(projectId, mainTaskIndex, subtaskIndex, userId) {
     try {
-      const project = await Project.findById(projectId);
+      const project = await Project.findOne({ _id: projectId, createdBy: userId });
       
       if (!project) {
         throw new ApiError(HTTP_STATUS.NOT_FOUND, ERROR_MESSAGES.PROJECT_NOT_FOUND);

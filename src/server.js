@@ -8,6 +8,7 @@ const { errorHandler, notFound } = require('./middlewares/errorHandler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 // Import routes
+const authRoutes = require('./routes/auth.routes');
 const projectRoutes = require('./routes/project.routes');
 
 // Initialize express app
@@ -37,6 +38,7 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
+app.use(`${serverConfig.apiPrefix}/auth`, authRoutes);
 app.use(`${serverConfig.apiPrefix}/projects`, projectRoutes);
 
 // 404 handler
