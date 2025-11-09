@@ -16,8 +16,8 @@ const register = asyncHandler(async (req, res) => {
   res.status(HTTP_STATUS.CREATED).json(
     new ApiResponse(
       HTTP_STATUS.CREATED,
-      result,
-      'Registration successful. Please check your email to verify your account.'
+      'Registration successful. Please check your email to verify your account.',
+      result
     )
   );
 });
@@ -33,7 +33,7 @@ const login = asyncHandler(async (req, res) => {
   const result = await authService.login(email, password);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, SUCCESS_MESSAGES.LOGIN_SUCCESS)
+    new ApiResponse(HTTP_STATUS.OK, SUCCESS_MESSAGES.LOGIN_SUCCESS, result)
   );
 });
 
@@ -48,7 +48,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
   const result = await authService.verifyEmail(email, verificationCode);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Email verified successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Email verified successfully', result)
   );
 });
 
@@ -63,7 +63,7 @@ const resendVerification = asyncHandler(async (req, res) => {
   const result = await authService.resendVerificationEmail(email);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Verification email sent successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Verification email sent successfully', result)
   );
 });
 
@@ -80,8 +80,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
   res.status(HTTP_STATUS.OK).json(
     new ApiResponse(
       HTTP_STATUS.OK,
-      result,
-      'If an account with that email exists, a password reset link has been sent.'
+      'If an account with that email exists, a password reset link has been sent.',
+      result
     )
   );
 });
@@ -97,7 +97,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   const result = await authService.resetPassword(resetToken, password);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Password reset successful')
+    new ApiResponse(HTTP_STATUS.OK, 'Password reset successful', result)
   );
 });
 
@@ -116,7 +116,7 @@ const changePassword = asyncHandler(async (req, res) => {
   );
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Password changed successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Password changed successfully', result)
   );
 });
 
@@ -131,7 +131,7 @@ const refreshToken = asyncHandler(async (req, res) => {
   const result = await authService.refreshToken(refreshToken);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Token refreshed successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Token refreshed successfully', result)
   );
 });
 
@@ -144,7 +144,7 @@ const getProfile = asyncHandler(async (req, res) => {
   const result = await authService.getProfile(req.user.id);
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Profile fetched successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Profile fetched successfully', result)
   );
 });
 
@@ -162,7 +162,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   });
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, result, 'Profile updated successfully')
+    new ApiResponse(HTTP_STATUS.OK, 'Profile updated successfully', result)
   );
 });
 
@@ -176,7 +176,7 @@ const logout = asyncHandler(async (req, res) => {
   // You could implement token blacklisting here if needed
 
   res.status(HTTP_STATUS.OK).json(
-    new ApiResponse(HTTP_STATUS.OK, {}, SUCCESS_MESSAGES.LOGOUT_SUCCESS)
+    new ApiResponse(HTTP_STATUS.OK, SUCCESS_MESSAGES.LOGOUT_SUCCESS, {})
   );
 });
 

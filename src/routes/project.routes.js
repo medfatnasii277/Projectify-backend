@@ -20,9 +20,6 @@ const serverConfig = require('../config/server');
 
 const router = express.Router();
 
-// Protect all project routes
-router.use(protect);
-
 // Configure multer for file uploads
 const upload = multer({ 
   dest: serverConfig.upload.uploadDir,
@@ -38,7 +35,18 @@ const upload = multer({
   },
 });
 
-// Project routes
+// Upload route - MUST be before protect middleware
+router.post(
+  '/upload',
+  protect,
+  upload.single('pdf'),
+  projectController.uploadProject
+);
+
+// Protect all other routes
+router.use(protect);
+
+// Project routes - GET all projects
 router.get(
   '/',
   paginationValidator,
@@ -46,24 +54,20 @@ router.get(
   projectController.getAllProjects
 );
 
-router.get(
-  '/:id',
-  projectIdValidator,
-  validate,
-  projectController.getProjectById
-);
-
-router.post(
-  '/upload',
-  upload.single('pdf'),
-  projectController.uploadProject
-);
-
+// Create new project manually
 router.post(
   '/',
   createProjectValidator,
   validate,
   projectController.createProject
+);
+
+// Get project by ID - MUST be after /upload to avoid matching it
+router.get(
+  '/:id',
+  projectIdValidator,
+  validate,
+  projectController.getProjectById
 );
 
 router.put(

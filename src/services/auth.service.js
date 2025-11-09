@@ -63,15 +63,21 @@ class AuthService {
    * Login user
    */
   async login(email, password) {
+    logger.info(`Login attempt for email: ${email}`);
+    
     // Find user and include password for comparison
     const user = await User.findByCredentials(email, password);
 
     if (!user) {
+      logger.warn(`Login failed for email: ${email} - Invalid credentials`);
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, 'Invalid email or password');
     }
 
+    logger.info(`User found: ${user.email}, isEmailVerified: ${user.isEmailVerified}, isActive: ${user.isActive}`);
+
     // Check if account is active
     if (!user.isActive) {
+      logger.warn(`Login failed for email: ${email} - Account deactivated`);
       throw new ApiError(
         HTTP_STATUS.FORBIDDEN,
         'Your account has been deactivated. Please contact support.'
@@ -81,6 +87,8 @@ class AuthService {
     // Update last login
     user.lastLogin = new Date();
     await user.save();
+
+    logger.info(`Login successful for email: ${email}`);
 
     // Generate tokens
     const tokens = jwtService.generateTokens({ id: user._id });

@@ -126,18 +126,25 @@ UserSchema.methods.generatePasswordResetToken = function() {
 
 // Static method to find user by email and password
 UserSchema.statics.findByCredentials = async function(email, password) {
+  console.log(`[findByCredentials] Looking for user with email: ${email}`);
   const user = await this.findOne({ email }).select('+password');
   
   if (!user) {
+    console.log(`[findByCredentials] No user found with email: ${email}`);
     return null;
   }
+  
+  console.log(`[findByCredentials] User found: ${user.email}, has password: ${!!user.password}`);
   
   const isMatch = await user.comparePassword(password);
+  console.log(`[findByCredentials] Password match result: ${isMatch}`);
   
   if (!isMatch) {
+    console.log(`[findByCredentials] Password does not match for email: ${email}`);
     return null;
   }
   
+  console.log(`[findByCredentials] Login successful for email: ${email}`);
   return user;
 };
 
